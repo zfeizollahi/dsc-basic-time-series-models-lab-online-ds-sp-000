@@ -1,4 +1,3 @@
-
 # Basic Time Series Models - Lab
 
 ## Introduction
@@ -25,9 +24,9 @@ Let's import `pandas`, `numpy`, and `matplotlib.pyplot` using their standard ali
 
 
 ```python
-
-
-
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
 # Do not change this seed
 np.random.seed(12) 
@@ -38,7 +37,7 @@ Create the dates. You can do this using the `date_range()` function Pandas. More
 
 ```python
 # Create dates
-dates = None
+dates = pd.date_range(start='2018-8-1', end='2018-10-31', freq='B')
 ```
 
 Generate the values for the white noise process representing Nina's commute in August and September.
@@ -46,7 +45,7 @@ Generate the values for the white noise process representing Nina's commute in A
 
 ```python
 # Generate values for white noise
-commute = None
+commute = np.random.normal(25, 4, len(dates))
 ```
 
 Create a time series with the dates and the commute times.
@@ -54,7 +53,7 @@ Create a time series with the dates and the commute times.
 
 ```python
 # Create a time series
-commute_series = None
+commute_series = pd.Series(commute, index=dates)
 ```
 
 Visualize the time series and set appropriate axis labels.
@@ -62,16 +61,34 @@ Visualize the time series and set appropriate axis labels.
 
 ```python
 # Visualize the time series 
-
+commute_series.plot()
 ```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f886143dc18>
+
+
+
+
+![png](index_files/index_13_1.png)
+
 
 Print Nina's shortest and longest commute.
 
 
 ```python
 # Shortest commute
-
+commute_series.min(), commute_series.max()
 ```
+
+
+
+
+    (12.41033391382408, 36.487277579955666)
+
+
 
 
 ```python
@@ -84,30 +101,70 @@ Look at the distribution of commute times.
 
 ```python
 # Distribution of commute times
-
+commute_series.hist()
 ```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f88c0862a90>
+
+
+
+
+![png](index_files/index_18_1.png)
+
 
 Compute the mean and standard deviation of `commute_series`. The fact that the mean and standard error are constant over time is crucial!
 
 
 ```python
 # Mean of commute_series
-
+commute_series.mean()
 ```
+
+
+
+
+    24.648446172457277
+
+
 
 
 ```python
 # Standard deviation of commute_series
-
+commute_series.std()
 ```
+
+
+
+
+    4.250874108206889
+
+
 
 Now, let's look at the mean and standard deviation for August and October.  
 
 
 ```python
 # Mean and standard deviation for August and October
-
+aug_mean = commute_series['2018-8'].mean()
+aug_std = commute_series['2018-8'].std()
+oct_mean = commute_series['2018-10'].mean()
+oct_std = commute_series['2018-8'].std()
 ```
+
+
+```python
+aug_mean, oct_mean, aug_std, oct_std
+```
+
+
+
+
+    (25.35433780425335, 25.687173311786953, 4.300977315435741, 4.300977315435741)
+
+
 
 Because you've generated this data, you know that the mean and standard deviation will be the same over time. However, comparing mean and standard deviation over time is useful practice for real data examples to check if a process is white noise!
 
@@ -139,14 +196,17 @@ Starting from a value of 1000 USD of a share value upon a company's first IPO (i
 np.random.seed(11)
 
 # Create a series with the specified dates
-dates = None
+dates = pd.date_range(start='2010-01-01', end='2010-11-30', freq='B')
 
 # White noise error term
-error = None
+error = np.random.normal(0, 10, len(dates))
 
 # Define random walk
-def random_walk(start, error):        
-    pass
+def random_walk(start, error):
+    y_0 = start
+    cum_error = np.cumsum(error)
+    y = y_0 + cum_error 
+    return y
 
 shares_value = random_walk(1000, error)
 
@@ -158,7 +218,19 @@ Visualize the time series with correct axis labels.
 
 ```python
 # Your code here
+shares_series.plot(figsize=(16,6))
 ```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f886206fa58>
+
+
+
+
+![png](index_files/index_29_1.png)
+
 
 You can see how this very much looks like the exchange rate series you looked at in the lesson!
 
@@ -171,7 +243,14 @@ Repeat the above, but include a drift parameter $c$ of 8 now!
 # Keep the random seed
 np.random.seed(11)
 
+def random_drift(start, error):
+    y_0 = start
+    cum_error = np.cumsum(error + 8)
+    y = y_0 + cum_error 
+    return y
 
+shares_drift = random_drift(1000, error)
+shares_series_drift = pd.Series(shares_drift, index=dates)
 ```
 
 
@@ -181,6 +260,10 @@ ax.set_ylabel('Stock value', fontsize=16)
 ax.set_xlabel('Date', fontsize=16)
 plt.show()
 ```
+
+
+![png](index_files/index_33_0.png)
+
 
 Note that there is a very strong drift here!
 
@@ -199,8 +282,16 @@ Plot the differenced time series (time period of 1) for the shares time series (
 
 ```python
 # Your code here
-
+walk_diff = shares_series.diff(periods=1)
+fig = plt.figure(figsize=(18,6))
+plt.plot(walk_diff)
+plt.title('Differenced shares series')
+plt.plot(figsize=(16,6), block=False);
 ```
+
+
+![png](index_files/index_38_0.png)
+
 
 This does look a lot like a white noise series!
 
@@ -209,8 +300,16 @@ Plot the differenced time series for the shares time series (with a drift).
 
 ```python
 # Your code here 
-
+drift_diff = shares_series_drift.diff(periods=1)
+fig = plt.figure(figsize=(18,6))
+plt.plot(walk_diff)
+plt.title('Differenced shares series')
+plt.plot(figsize=(16,6), block=False);
 ```
+
+
+![png](index_files/index_41_0.png)
+
 
 This is also a white noise series, but what can you tell about the mean? 
 
